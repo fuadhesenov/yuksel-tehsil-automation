@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
@@ -24,22 +25,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS - spesifik origin + fallback
-FRONTEND_URL = os.getenv("FRONTEND_URL", "")
-cors_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-]
-if FRONTEND_URL:
-    cors_origins.append(FRONTEND_URL)
+# CORS - manual middleware (FastAPI CORSMiddleware bazen preflight header gondermez)
+class CORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.method == "OPTIONS":
+            return JSONResponse(
+                content="OK",
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Max-Age": "600",
+                },
+            )
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins if FRONTEND_URL else ["*"],
-    allow_credentials=bool(FRONTEND_URL),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware)
 
 # OpenAI Client - env var yoksa None olsun, startup'da yeniden dene
 _openai_key = os.getenv("OPENAI_API_KEY")
