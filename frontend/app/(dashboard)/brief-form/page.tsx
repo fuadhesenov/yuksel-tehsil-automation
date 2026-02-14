@@ -49,24 +49,32 @@ const STORAGE_KEY = "briefFormData";
 const STEP_KEY = "briefFormStep";
 
 export default function BriefFormPage() {
-  // LocalStorage-dan yüklə (referans mantığı: useState callback — flash yox)
-  const [currentStep, setCurrentStep] = useState(() => {
-    if (typeof window === "undefined") return 0;
-    const saved = localStorage.getItem(STEP_KEY);
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [formData, setFormData] = useState<BriefData>(() => {
-    if (typeof window === "undefined") return defaultBriefData;
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : defaultBriefData;
-  });
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<BriefData>(defaultBriefData);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Client-only: localStorage-dan yüklə (SSR-safe — hydration mismatch yox)
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      const savedStep = localStorage.getItem(STEP_KEY);
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
+      if (savedStep) {
+        setCurrentStep(parseInt(savedStep, 10));
+      }
+    } catch { /* ignore */ }
+    setHydrated(true);
+  }, []);
 
   // Supabase-dən yüklə (yalnız localStorage boşdursa)
   useEffect(() => {
+    if (!hydrated) return;
     const hasData = localStorage.getItem(STORAGE_KEY);
-    if (hasData) return; // localStorage-da data var, server-dən yükləmə
+    if (hasData) return;
 
     getConfig()
       .then((config) => {
@@ -78,17 +86,19 @@ export default function BriefFormPage() {
         }
       })
       .catch(() => { /* backend əlçatan deyil, default istifadə et */ });
-  }, []);
+  }, [hydrated]);
 
-  // Form verileri değişince localStorage-a kaydet (referans mantığı)
+  // Form verileri değişince localStorage-a kaydet
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-  }, [formData]);
+  }, [formData, hydrated]);
 
-  // Aktif adım değişince localStorage-a kaydet (referans mantığı)
+  // Aktif adım değişince localStorage-a kaydet
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STEP_KEY, currentStep.toString());
-  }, [currentStep]);
+  }, [currentStep, hydrated]);
 
   const updateField = useCallback(
     (field: keyof BriefData, value: string) => {
