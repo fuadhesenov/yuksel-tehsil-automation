@@ -24,11 +24,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS
+# CORS - spesifik origin + fallback
+FRONTEND_URL = os.getenv("FRONTEND_URL", "")
+cors_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+if FRONTEND_URL:
+    cors_origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins if FRONTEND_URL else ["*"],
+    allow_credentials=bool(FRONTEND_URL),
     allow_methods=["*"],
     allow_headers=["*"],
 )
