@@ -158,7 +158,17 @@ def load_config_sync():
             rows = cur.fetchall()
             config = {}
             for row in rows:
-                config[row['key']] = json.loads(row['value']) if isinstance(row['value'], str) else row['value']
+                val = row['value']
+                if val is None:
+                    config[row['key']] = None
+                elif isinstance(val, str):
+                    try:
+                        config[row['key']] = json.loads(val)
+                    except (json.JSONDecodeError, ValueError):
+                        config[row['key']] = val
+                else:
+                    config[row['key']] = val
+            print(f"Config yüklendi: {list(config.keys())}")
             return config
     except Exception as e:
         print(f"Config yükleme hatası: {e}")
