@@ -19,13 +19,12 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 app = FastAPI(
-    title="Yüksel Təhsil Mərkəzi - Instagram DM Automation API",
-    description="ManyChat + OpenAI GPT-4 Entegrasyon Backend'i - Yüksel Təhsil Mərkəzi",
+    title="Instagram DM Automation API",
+    description="ManyChat + OpenAI GPT-4 Entegrasyon Backend'i",
     version="1.0.0"
 )
 
 # CORS
-FRONTEND_URL = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,12 +33,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# OpenAI Client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# OpenAI Client - env var yoksa None olsun, startup'da yeniden dene
+_openai_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=_openai_key) if _openai_key else None
 
 # Global sistem prompt
-current_system_prompt = """Sən Yüksel Təhsil Mərkəzinin peşəkar AI köməkçisisən.
-Türkiyə və Avropada təhsil imkanları haqqında məlumat verirsən.
+current_system_prompt = """Sən peşəkar bir Instagram asistentisən.
 Defolt olaraq Azərbaycan dilində cavab ver."""
 
 # Conversation history - subscriber_id bazında son mesajları saxla
@@ -134,28 +133,15 @@ def get_db_connection():
         return None
 
 def init_database():
-    """Veritabanı bağlantısını kontrol et və config tablosunu yarat"""
+    """Veritabanı bağlantısını kontrol et"""
     if not DATABASE_URL:
         print("DATABASE_URL tanımlı değil!")
         return
     
     conn = get_db_connection()
     if conn:
-        try:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS config (
-                        key TEXT PRIMARY KEY,
-                        value JSONB NOT NULL,
-                        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                conn.commit()
-            print("Veritabanı bağlantısı başarılı! Config tablosu hazır.")
-        except Exception as e:
-            print(f"Tablo oluşturma hatası: {e}")
-        finally:
-            conn.close()
+        print("Veritabanı bağlantısı başarılı!")
+        conn.close()
 
 def load_config_sync():
     """Supabase'den config yükle (sync)"""
@@ -532,7 +518,7 @@ def test_prompt(payload: TestPayload):
     global current_system_prompt
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": current_system_prompt},
                 {"role": "user", "content": payload.message}

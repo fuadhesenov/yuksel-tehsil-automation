@@ -15,10 +15,11 @@ CREATE INDEX IF NOT EXISTS idx_config_updated_at ON config (updated_at DESC);
 
 ALTER TABLE config ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Service role full access" ON config
-    FOR ALL
-    USING (true)
-    WITH CHECK (true);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'config' AND policyname = 'Service role full access') THEN
+        CREATE POLICY "Service role full access" ON config FOR ALL USING (true) WITH CHECK (true);
+    END IF;
+END $$;
 
 -- İlk konfiqurasiya
 INSERT INTO config (key, value) VALUES 
@@ -40,7 +41,8 @@ CREATE INDEX IF NOT EXISTS idx_paused_expires ON paused_conversations (expires_a
 
 ALTER TABLE paused_conversations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Service role full access" ON paused_conversations
-    FOR ALL
-    USING (true)
-    WITH CHECK (true);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'paused_conversations' AND policyname = 'Service role full access') THEN
+        CREATE POLICY "Service role full access" ON paused_conversations FOR ALL USING (true) WITH CHECK (true);
+    END IF;
+END $$;

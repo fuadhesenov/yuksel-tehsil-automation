@@ -1,5 +1,46 @@
 # Progress Log
 
+## Session: 2026-02-14 14:30 (UTC+04:00) — Supabase + GitHub + Deploy Hazırlığı
+### Goal
+- Supabase credentials ilə inteqrasiya
+- paused_conversations tablosu əlavə et
+- Frontend BriefData → Backend ilə senkronize et
+- Brief form: Supabase-dən yükləmə + localStorage persist
+- GitHub repo yarat və push et
+- Railway/Netlify deploy üçün env variables hazırla
+
+### Plan
+- migration.sql-ə paused_conversations əlavə et
+- Frontend api.ts BriefData-nı backend modeli ilə uyğunlaşdır
+- Brief form-u düzəlt: doğru alanlar + getConfig ilə server-dən yüklə
+- GitHub-a push et
+- Env variables hazırla
+
+### Changes (Implementation Notes)
+- [x] migration.sql güncəlləndi
+  - What: paused_conversations tablosu əlavə olundu (subscriber_id, paused_at, expires_at, reason)
+  - Files: `supabase/migration.sql`
+- [x] Frontend api.ts BriefData senkronize edildi
+  - What: Backend modeli ilə uyğunlaşdırıldı (programsList, examPrep, scholarshipInfo, targetCountries, languageCourses)
+  - Files: `frontend/lib/api.ts`
+- [x] Brief form səhifəsi yenidən yazıldı
+  - What: Doğru təhsil mərkəzi alanları, Supabase-dən yükləmə (getConfig), localStorage persist
+  - Files: `frontend/app/(dashboard)/brief-form/page.tsx`
+- [x] GitHub repo yaradıldı və push edildi
+  - Repo: https://github.com/fuadhesenov/yuksel-tehsil-automation
+  - Branch: main
+- [ ] Supabase-də paused_conversations tablosu yaradılacaq (SQL Editor-da)
+- [x] Build test uğurlu: `npm run build` → 59 route compiled
+
+### Verification
+- ✅ `npm run build` uğurlu
+- ✅ GitHub push uğurlu (941 objects, 16.30 MiB)
+- ⏳ Supabase paused_conversations tablosu yaradılmalı
+- ⏳ Railway deploy
+- ⏳ Netlify deploy
+
+---
+
 ## Session: 2026-02-13 21:00 (UTC+04:00) — WowDash Integration & Pages
 ### Goal
 - WowDash template-i tam inteqrasiya et
