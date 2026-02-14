@@ -49,48 +49,46 @@ const STORAGE_KEY = "briefFormData";
 const STEP_KEY = "briefFormStep";
 
 export default function BriefFormPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<BriefData>(defaultBriefData);
+  // LocalStorage-dan yüklə (referans mantığı: useState callback — flash yox)
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const saved = localStorage.getItem(STEP_KEY);
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [formData, setFormData] = useState<BriefData>(() => {
+    if (typeof window === "undefined") return defaultBriefData;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : defaultBriefData;
+  });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [loadedFromServer, setLoadedFromServer] = useState(false);
 
+  // Supabase-dən yüklə (yalnız localStorage boşdursa)
   useEffect(() => {
-    // 1) localStorage-dan yüklə
-    try {
-      const savedData = localStorage.getItem(STORAGE_KEY);
-      const savedStep = localStorage.getItem(STEP_KEY);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        if (parsed.businessName) {
-          setFormData(parsed);
-          if (savedStep) setCurrentStep(parseInt(savedStep, 10));
-          return; // localStorage-da data var, server-dən yükləmə
-        }
-      }
-    } catch { /* ignore */ }
+    const hasData = localStorage.getItem(STORAGE_KEY);
+    if (hasData) return; // localStorage-da data var, server-dən yükləmə
 
-    // 2) localStorage boşdursa, Supabase-dən yüklə
     getConfig()
       .then((config) => {
         if (config.briefData && typeof config.briefData === "object" && Object.keys(config.briefData).length > 0) {
           const merged = { ...defaultBriefData, ...config.briefData };
           setFormData(merged);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-          setLoadedFromServer(true);
           toast.success("Mövcud brief Supabase-dən yükləndi!");
         }
       })
       .catch(() => { /* backend əlçatan deyil, default istifadə et */ });
   }, []);
 
+  // Form verileri değişince localStorage-a kaydet (referans mantığı)
   useEffect(() => {
-    // Hər dəyişiklikdə localStorage-ə yaz
-    if (formData.businessName) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
+
+  // Aktif adım değişince localStorage-a kaydet (referans mantığı)
+  useEffect(() => {
     localStorage.setItem(STEP_KEY, currentStep.toString());
-  }, [formData, currentStep]);
+  }, [currentStep]);
 
   const updateField = useCallback(
     (field: keyof BriefData, value: string) => {
