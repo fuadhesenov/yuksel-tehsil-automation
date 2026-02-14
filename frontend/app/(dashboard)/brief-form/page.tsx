@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { BriefData, defaultBriefData, savePrompt, getConfig } from "@/lib/api";
 import {
+  Trash2,
   Building2,
   GraduationCap,
   DollarSign,
@@ -106,6 +107,15 @@ export default function BriefFormPage() {
     },
     []
   );
+
+  const handleReset = () => {
+    if (!confirm("Bütün brief məlumatları silinəcək. Əminsiniz?")) return;
+    setFormData(defaultBriefData);
+    setCurrentStep(0);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STEP_KEY);
+    toast.success("Brief sıfırlandı!");
+  };
 
   const handleSave = async () => {
     if (!formData.businessName.trim()) {
@@ -320,6 +330,14 @@ export default function BriefFormPage() {
               </Button>
 
               <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="h-12 px-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  onClick={handleReset}
+                >
+                  <Trash2 className="w-4 h-4 mr-1.5" />
+                  Sıfırla
+                </Button>
                 {currentStep === steps.length - 1 ? (
                   <Button
                     variant="default"

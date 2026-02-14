@@ -71,9 +71,26 @@
 - ⏳ Supabase: 002 + 003 SQL çalıştırılmalı
 - ⏳ Netlify: env var (NEXT_PUBLIC_API_URL) əlavə olunmalı
 
+### Əlavə Fix-lər (eyni session)
+- [x] CORS fix: manual middleware (FastAPI CORSMiddleware preflight header göndərmir idi)
+  - Files: `backend/main.py`
+- [x] React hydration #418 fix: localStorage-ı useEffect-dən yüklə (SSR-safe)
+  - Files: `frontend/app/(dashboard)/brief-form/page.tsx`
+- [x] PORT fix: Railway domain 8080, app 8000 idi — PORT env var düzəldildi
+- [x] Terminal test: Railway backend-ə getConfig + savePrompt uğurlu
+- [x] Supabase data sıfırlandı (test dəyərləri silindi)
+- [x] Brief form-a "Sıfırla" butonu əlavə edildi (localStorage + form reset)
+  - Files: `frontend/app/(dashboard)/brief-form/page.tsx`
+
+### Railway Canlı Test Nəticələri
+- ✅ `GET /admin/getConfig` → briefData + systemPrompt yükləndi
+- ✅ `POST /admin/savePrompt` → briefData Supabase-ə yazıldı, prompt yaradıldı
+- ✅ `OPTIONS /admin/savePrompt` → 200 OK (CORS preflight)
+- ✅ Supabase data sıfırlandı (boş briefData)
+
 ### Next
-- Railway DB bağlantısı düzəldildikdən sonra: end-to-end test (brief form → Supabase → chat test)
 - ManyChat əlçatan olduqda: MANYCHAT_API_KEY + MANYCHAT_FLOW_NS əlavə et
+- Müştəri brief formu dolduracaq → Supabase-ə yazılacaq → chat test ilə yoxlanacaq
 
 ---
 
