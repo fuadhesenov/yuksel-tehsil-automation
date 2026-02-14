@@ -20,24 +20,34 @@
 - [x] migration.sql güncəlləndi
   - What: paused_conversations tablosu əlavə olundu (subscriber_id, paused_at, expires_at, reason)
   - Files: `supabase/migration.sql`
+- [x] migration.sql SQL hatası düzəldildi
+  - What: `CREATE POLICY IF NOT EXISTS` → `DO $$ BEGIN ... END $$` block ilə əvəz olundu (PostgreSQL syntax fix)
+  - Files: `supabase/migration.sql`
 - [x] Frontend api.ts BriefData senkronize edildi
   - What: Backend modeli ilə uyğunlaşdırıldı (programsList, examPrep, scholarshipInfo, targetCountries, languageCourses)
   - Files: `frontend/lib/api.ts`
 - [x] Brief form səhifəsi yenidən yazıldı
   - What: Doğru təhsil mərkəzi alanları, Supabase-dən yükləmə (getConfig), localStorage persist
   - Files: `frontend/app/(dashboard)/brief-form/page.tsx`
-- [x] GitHub repo yaradıldı və push edildi
+- [x] Backend: Resilient OpenAI client init
+  - What: `OpenAI(api_key=...)` → env var yoksa None, crash etmir. Referans mantığı: gpt-4o-mini webhook + gpt-4 test
+  - Files: `backend/main.py`
+- [x] Backend: init_database sadələşdirildi (referans mantığı — yalnız bağlantı test)
+  - Files: `backend/main.py`
+- [x] Netlify fix: `.npmrc` (legacy-peer-deps) + `netlify.toml` yaradıldı
+  - What: react-simple-maps React 19 peer dep conflict həll olundu
+  - Files: `frontend/.npmrc`, `frontend/netlify.toml`
+- [x] GitHub push: 2 commit (initial + fix)
   - Repo: https://github.com/fuadhesenov/yuksel-tehsil-automation
   - Branch: main
-- [ ] Supabase-də paused_conversations tablosu yaradılacaq (SQL Editor-da)
 - [x] Build test uğurlu: `npm run build` → 59 route compiled
 
 ### Verification
-- ✅ `npm run build` uğurlu
-- ✅ GitHub push uğurlu (941 objects, 16.30 MiB)
-- ⏳ Supabase paused_conversations tablosu yaradılmalı
-- ⏳ Railway deploy
-- ⏳ Netlify deploy
+- ✅ `npm run build` uğurlu (2 dəfə)
+- ✅ GitHub push uğurlu (2 commit)
+- ⏳ Supabase: düzəldilmiş SQL yenidən çalıştırılmalı
+- ⏳ Railway: OPENAI_API_KEY env var əlavə olunmalı + redeploy
+- ⏳ Netlify: avtomatik redeploy (GitHub push trigger)
 
 ---
 

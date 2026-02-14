@@ -427,7 +427,11 @@ async def process_webhook(subscriber_id: str, user_message: str):
     """
     Webhook işlemi - GPT-4o-mini + Prompt Caching + Conversation History
     """
-    global current_system_prompt
+    global current_system_prompt, client
+    
+    if not client:
+        print("[ERROR] OpenAI client yoxdur! OPENAI_API_KEY env var-ı yoxlayın.")
+        return
     
     try:
         # Sohbet geçmişini al
@@ -464,7 +468,17 @@ async def process_webhook(subscriber_id: str, user_message: str):
 # --- Startup Event ---
 @app.on_event("startup")
 def startup_event():
-    global current_system_prompt
+    global current_system_prompt, client
+    
+    # OpenAI client yoxdursa, startup zamanı yenidən yarat
+    if not client:
+        key = os.getenv("OPENAI_API_KEY")
+        if key:
+            client = OpenAI(api_key=key)
+            print("OpenAI client startup zamanı yaradıldı.")
+        else:
+            print("[WARNING] OPENAI_API_KEY hələ təyin olunmayıb!")
+    
     # Veritabanı bağlantısını test et
     init_database()
     # Kayıtlı config'i yükle
@@ -516,6 +530,8 @@ def save_prompt(payload: BriefPayload):
 @app.post("/admin/testPrompt")
 def test_prompt(payload: TestPayload):
     global current_system_prompt
+    if not client:
+        raise HTTPException(status_code=503, detail="OpenAI client hazır deyil. OPENAI_API_KEY yoxlayın.")
     try:
         completion = client.chat.completions.create(
             model="gpt-4",
