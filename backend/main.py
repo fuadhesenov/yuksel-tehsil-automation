@@ -557,7 +557,7 @@ def test_prompt(payload: TestPayload):
         raise HTTPException(status_code=503, detail="OpenAI client hazır deyil. OPENAI_API_KEY yoxlayın.")
     try:
         completion = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": current_system_prompt},
                 {"role": "user", "content": payload.message}
