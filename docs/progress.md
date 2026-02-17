@@ -1,5 +1,50 @@
 # Progress Log
 
+## Session: 2026-02-17 18:13 (UTC+04:00) — ManyChat Automation Qurulumu
+### Goal
+- ManyChat automation-ları referansa uyğun qur
+- API Key + FLOW_NS env var-ları Railway-a əlavə et
+- AI_Response user field yarat
+- Instagram Default Reply + Send AI Response automation-ları qur
+- End-to-end DM test
+
+### Plan
+- Paket-1: ManyChat konfiqurasiyası (field + automation-lar)
+- Paket-2: Railway env var-ları (MANYCHAT_API_KEY, MANYCHAT_FLOW_NS)
+- Paket-3: End-to-end test
+
+### Changes (Implementation Notes)
+- [x] Paket-1 / AI_Response user field
+  - What: ManyChat Settings → Fields → AI_Response (Text) yaradıldı
+- [x] Paket-1 / Send AI Response automation
+  - What: Trigger: "Message contains __ai_internal__" → Send Message: {{AI_Response}}
+  - Status: LIVE
+- [x] Paket-1 / Instagram Default Reply automation
+  - What: Trigger: Default Reply → External Request POST → Railway webhook, Body: Full Contact Data
+  - URL: https://yuksel-tehsil-automation-production.up.railway.app/webhook
+  - Status: LIVE
+- [x] Paket-2 / Railway env var-ları
+  - MANYCHAT_API_KEY: set ✅
+  - MANYCHAT_FLOW_NS: content20260217143924_891564 ✅
+- [x] Paket-3 / End-to-end test — TAM UĞURLU
+  - 5 real DM test: hamısı OpenAI ✅, ManyChat Field ✅, ManyChat Flow ✅
+  - Prompt Caching aktiv (cached_tokens: 3072→3456)
+  - Conversation history işləyir (2→10 mesaj)
+  - AI Azərbaycanca, satış yönümlü, dəqiq cavablar verir
+
+### Verification
+- ✅ /health endpoint: OK
+- ✅ /webhook POST: {"status": "received"}
+- ✅ Real DM test (subscriber 2139783308): 5/5 uğurlu
+- ✅ ManyChat Field + Flow: hamısı success
+- ✅ OpenAI Prompt Caching: aktiv
+
+### Next
+- Brief data real məlumatlarla doldurulmalı (müştəri tərəfindən)
+- İstehsal mühitində monitorinq
+
+---
+
 ## Session: 2026-02-14 15:00 (UTC+04:00) — Deployment Fix + End-to-End Audit
 ### Goal
 - Railway/Netlify deploy xətalarını həll et
